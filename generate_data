@@ -1,0 +1,65 @@
+# Generate Dummy Data for Bike Sharing Demand Prediction
+
+# Set a seed for reproducibility
+set.seed(42)
+
+# Number of observations
+n <- 200
+
+# Time of Day (Categorical)
+time_of_day <- sample(c("Morning", "Afternoon", "Evening", "Night"), n, replace = TRUE, prob = c(0.25, 0.35, 0.25, 0.15)) # Unequal probabilities
+
+# Day of the Week (Categorical)
+day_of_week <- sample(c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"), n, replace = TRUE)
+
+# Temperature (Celsius)
+temperature <- rnorm(n, 25, 5) + ifelse(day_of_week %in% c("Saturday", "Sunday"), 2, 0) # Warmer on weekends
+
+# Humidity (%)
+humidity <- runif(n, 40, 80)
+
+# Wind Speed (km/h)
+wind_speed <- runif(n, 5, 25)
+
+# Weather Condition (Categorical)
+weather_condition <- sample(c("Sunny", "Cloudy", "Rainy", "Snowy"), n, replace = TRUE, prob = c(0.6, 0.3, 0.08, 0.02))
+
+# Special Event (Boolean)
+special_event <- sample(c(TRUE, FALSE), n, replace = TRUE, prob = c(0.1, 0.9))
+
+# Baseline demand (adjust this for overall demand level)
+baseline_demand <- 50
+
+# Bike Demand (Target Variable) - More realistic relationship
+bike_demand <- baseline_demand +
+  3 * temperature -
+  0.8 * humidity -
+  0.5 * wind_speed +
+  15 * ifelse(time_of_day == "Morning", 1, 0) +
+  10 * ifelse(time_of_day == "Afternoon", 1, 0) +
+  5 * ifelse(time_of_day == "Evening", 1, 0) +
+  20 * ifelse(day_of_week %in% c("Saturday", "Sunday"), 1, 0) + # Higher demand on weekends
+  (-10) * ifelse(weather_condition == "Rainy", 1, 0) + # Lower demand in rain
+  (-5) * ifelse(weather_condition == "Snowy", 1, 0) +  # Even lower demand in snow
+  25 * ifelse(special_event, 1, 0) +  # Higher demand during events
+  rnorm(n, 0, 10) # Add some random noise
+
+# Create the data frame
+bike_data <- data.frame(
+  time_of_day,
+  day_of_week,
+  temperature,
+  humidity,
+  wind_speed,
+  weather_condition,
+  special_event,
+  bike_demand
+)
+
+# Print the first few rows
+head(bike_data)
+
+# Save to CSV (optional)
+write.csv(bike_data, "bike_sharing_data.csv", row.names = FALSE)
+
+# You can now use this bike_data for your model building.
